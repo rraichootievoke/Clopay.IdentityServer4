@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Runs the Skoruba IdentityServer4 Admin UI locally against a Clopay IDP database - without ever
+    Runs the Clopay IAM Admin UI locally against a Clopay IDP database - without ever
     migrating or seeding that database.
 
 .DESCRIPTION
@@ -16,7 +16,7 @@
     ever copied into this repo. To make the UI unable to write while you evaluate it, pass a read-only
     SQL login with -ConfigConnectionString (see _designs\Create-ReadOnly-Login.sql).
 
-    Sign in with the local seed user from src\Skoruba.IdentityServer4.Admin\identitydata.json (local only).
+    Sign in with the local seed user from src\Clopay.IdentityServer4.Admin\identitydata.json (local only).
 
 .EXAMPLE
     .\Start-AdminLocal.ps1                                   # Test IDP database
@@ -77,7 +77,7 @@ if (-not $ConfigConnectionString) {
 Write-Host ("IDP database : {0} / {1}  (as {2})" -f ([regex]::Match($ConfigConnectionString, '(?:Data Source|Server)=([^;]+)').Groups[1].Value), ([regex]::Match($ConfigConnectionString, '(?:Initial Catalog|Database)=([^;]+)').Groups[1].Value), ([regex]::Match($ConfigConnectionString, 'User ID=([^;]+)').Groups[1].Value))
 
 Stop-Apps
-foreach ($proj in 'Skoruba.IdentityServer4.Admin', 'Skoruba.IdentityServer4.STS.Identity') {
+foreach ($proj in 'Clopay.IdentityServer4.Admin', 'Clopay.IdentityServer4.STS.Identity') {
     # Always build (incremental, fast when nothing changed) - a stale bin\Release silently serves old views and old CSS.
     Write-Host "Building $proj ..."
     $out = & dotnet build (Join-Path $src "$proj\$proj.csproj") -c Release -v q -nologo 2>&1
@@ -90,7 +90,7 @@ if (-not (Test-LocalDb)) {
     Write-Host 'First run: creating the local admin database ...'
     Set-LocalConnections
     $env:DatabaseMigrationsConfiguration__ApplyDatabaseMigrations = 'true'; $env:SeedConfiguration__ApplySeed = 'true'
-    Start-App 'bootstrap' 'Skoruba.IdentityServer4.Admin' 'https://localhost:44303'
+    Start-App 'bootstrap' 'Clopay.IdentityServer4.Admin' 'https://localhost:44303'
     # The bootstrap Admin returns 500 on '/' until the STS exists, so wait for the seed data instead of HTTP.
     $seeded = $false
     for ($i = 0; $i -lt 120 -and -not $seeded; $i++) {
@@ -107,13 +107,13 @@ $env:DatabaseMigrationsConfiguration__ApplyDatabaseMigrations = 'false'; $env:Se
 $env:AdminConfiguration__IdentityServerBaseUrl    = 'https://localhost:44310'
 $env:AdminConfiguration__IdentityAdminRedirectUri = 'https://localhost:44303/signin-oidc'
 $env:AdminConfiguration__IdentityAdminBaseUrl     = 'https://localhost:44303'
-$env:AdminConfiguration__ClientSecret = [regex]::Match((Get-Content (Join-Path $src 'Skoruba.IdentityServer4.Admin\appsettings.Local.json') -Raw), '"ClientSecret"\s*:\s*"([^"]+)"').Groups[1].Value
+$env:AdminConfiguration__ClientSecret = [regex]::Match((Get-Content (Join-Path $src 'Clopay.IdentityServer4.Admin\appsettings.Local.json') -Raw), '"ClientSecret"\s*:\s*"([^"]+)"').Groups[1].Value
 Set-LocalConnections
-Start-App 'sts' 'Skoruba.IdentityServer4.STS.Identity' 'https://localhost:44310'
+Start-App 'sts' 'Clopay.IdentityServer4.STS.Identity' 'https://localhost:44310'
 if (-not (Wait-Http 'https://localhost:44310/.well-known/openid-configuration' 120)) { throw "STS did not start - see $run\sts.out.log" }
 Set-Item Env:ConnectionStrings__ConfigurationDbConnection  $ConfigConnectionString
 Set-Item Env:ConnectionStrings__PersistedGrantDbConnection $ConfigConnectionString
-Start-App 'admin' 'Skoruba.IdentityServer4.Admin' 'https://localhost:44303'
+Start-App 'admin' 'Clopay.IdentityServer4.Admin' 'https://localhost:44303'
 if (-not (Wait-Http 'https://localhost:44303/' 120)) { throw "Admin did not start - see $run\admin.out.log" }
 
 Write-Host ''

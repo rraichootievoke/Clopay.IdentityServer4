@@ -3,8 +3,7 @@
 A small web UI for managing the **Clopay IdentityServer4** instance: clients, client secrets, API resources,
 scopes, identity resources and active sessions (persisted grants).
 
-Built on [Skoruba IdentityServer4 Admin](https://github.com/skoruba/IdentityServer4.Admin) v2.1.0 (.NET 6, IdentityServer4 EF 4.1.2),
-restyled to the Clopay look and trimmed down to what we use: **SQL Server only, English only, no themes.**
+Built on .NET 6 and IdentityServer4 (EF 4.1.2), in the Clopay look and trimmed down to what we use: **SQL Server only, English only, no themes.**
 
 ## What you can do
 
@@ -27,13 +26,13 @@ updated without downtime; "Revoke immediately" is for leaked secrets.
 
 ```
 src/
-  Skoruba.IdentityServer4.Admin            Admin site (host)            https://localhost:44303
-  Skoruba.IdentityServer4.STS.Identity     Sign-in service for admins   https://localhost:44310
-  Skoruba.IdentityServer4.Admin.UI         Screens (controllers, views, Clopay CSS in wwwroot/css/clopay.css)
-  Skoruba.IdentityServer4.Admin.BusinessLogic*   Services, DTOs, audit events
-  Skoruba.IdentityServer4.Admin.EntityFramework* Data access (SQL Server)
-  Skoruba.IdentityServer4.Shared*          Shared helpers and configuration
-tests/                                     Unit tests + integration tests
+  Clopay.IdentityServer4.Admin            Admin site (host)            https://localhost:44303
+  Clopay.IdentityServer4.STS.Identity     Sign-in service for admins   https://localhost:44310
+  Clopay.IdentityServer4.Admin.UI         Screens (controllers, views, Clopay CSS in wwwroot/css/clopay.css)
+  Clopay.IdentityServer4.Admin.BusinessLogic*   Services, DTOs, audit events
+  Clopay.IdentityServer4.Admin.EntityFramework* Data access (SQL Server)
+  Clopay.IdentityServer4.Shared*          Shared helpers and configuration
+tests/                                     Unit tests
 cAppSettings/                              Reference copies of the Clopay IDP settings (source of the values below)
 _designs/                                  Handover notes and the read-only SQL login script
 Start-AdminLocal.ps1                       One-command local launcher
@@ -50,7 +49,7 @@ Needs the .NET 6+ SDK, SQL Server LocalDB, and (for the Clopay database) network
 ```
 
 Open <https://localhost:44303> and sign in with user **`admin`** and the seeded local password from
-`src/Skoruba.IdentityServer4.Admin/identitydata.json` (`Pa$$word123` - note the **two** `$`). That account exists only in
+`src/Clopay.IdentityServer4.Admin/identitydata.json` (`Pa$$word123` - note the **two** `$`). That account exists only in
 your throw-away LocalDB database.
 
 Or run from an IDE: start **STS** and **Admin** with `ASPNETCORE_ENVIRONMENT=Local` (the default launch profile).
@@ -92,7 +91,7 @@ AdminConfiguration__ClientSecret=...
 ### Safety rules (read before changing anything)
 
 1. **Never** set `SeedConfiguration:ApplySeed` or `DatabaseMigrationsConfiguration:ApplyDatabaseMigrations` to `true` while
-   `ConfigurationDbConnection` points at the IDP database - Skoruba's migrations and sample clients would be written into the real
+   `ConfigurationDbConnection` points at the IDP database - the admin tool's migrations and sample clients would be written into the real
    tables. They are `false` in every environment file; only `Local` turns them on.
 2. To create `IdentityServerAdminDB` once in a deployed environment, run the Admin once with all six connection strings pointing at
    that database and both flags `true`, then switch back (or let a DBA create it).
@@ -102,10 +101,10 @@ AdminConfiguration__ClientSecret=...
 ## Build and test
 
 ```bash
-dotnet build Skoruba.IdentityServer4.Admin.sln
-dotnet test  tests/Skoruba.IdentityServer4.Admin.UnitTests
+dotnet build Clopay.IdentityServer4.Admin.sln
+dotnet test  tests/Clopay.IdentityServer4.Admin.UnitTests
 ```
 
 ## Licence
 
-MIT - see [LICENSE.md](LICENSE.md). Based on Skoruba IdentityServer4 Admin by Jan Škoruba.
+MIT - see [LICENSE.md](LICENSE.md) (includes the notice for the open-source admin UI this project started from).

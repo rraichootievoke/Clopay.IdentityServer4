@@ -1,0 +1,154 @@
+@using Clopay.IdentityServer4.Admin.BusinessLogic.Dtos.Configuration
+@using Clopay.IdentityServer4.Admin.UI.Configuration.Constants
+@model ClientQuickCreateDto
+
+@{
+    ViewBag.Title = "New client";
+    Layout = "_Layout";
+
+    string Checked(QuickClientTemplate t) => Model.Template == t ? "checked" : string.Empty;
+}
+
+<div class="cl-page cl-narrow">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-area="@CommonConsts.AdminUIArea" asp-action="Clients">Clients</a></li>
+            <li class="breadcrumb-item active" aria-current="page">New client</li>
+        </ol>
+    </nav>
+
+    <h1 class="cl-title">Create a client</h1>
+    <p class="cl-subtitle">Choose what kind of app this is, then fill in the few details below. A secret is generated for you when the client needs one.</p>
+
+    <form asp-area="@CommonConsts.AdminUIArea" asp-controller="Configuration" asp-action="ClientNew" method="post" id="quick-client-form" autocomplete="off">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+        <h2 class="cl-section">1. What are you connecting?</h2>
+        <div class="cl-choices">
+            <label class="cl-choice">
+                <input type="radio" name="Template" value="@((int)QuickClientTemplate.WebApp)" @Checked(QuickClientTemplate.WebApp) />
+                <span class="cl-choice-body">
+                    <strong>Web application</strong>
+                    <span>Server-side site where users sign in. Uses a secret.</span>
+                </span>
+            </label>
+            <label class="cl-choice">
+                <input type="radio" name="Template" value="@((int)QuickClientTemplate.Spa)" @Checked(QuickClientTemplate.Spa) />
+                <span class="cl-choice-body">
+                    <strong>Single-page app</strong>
+                    <span>Angular / browser app. No secret (uses PKCE).</span>
+                </span>
+            </label>
+            <label class="cl-choice">
+                <input type="radio" name="Template" value="@((int)QuickClientTemplate.Machine)" @Checked(QuickClientTemplate.Machine) />
+                <span class="cl-choice-body">
+                    <strong>Service / API caller</strong>
+                    <span>Server-to-server, no user. Uses a secret.</span>
+                </span>
+            </label>
+            <label class="cl-choice">
+                <input type="radio" name="Template" value="@((int)QuickClientTemplate.LegacyPassword)" @Checked(QuickClientTemplate.LegacyPassword) />
+                <span class="cl-choice-body">
+                    <strong>Username &amp; password app</strong>
+                    <span>Legacy apps that collect the password themselves (like CCAApp).</span>
+                </span>
+            </label>
+        </div>
+
+        <h2 class="cl-section">2. Name it</h2>
+        <div class="cl-card cl-card-pad">
+            <div class="form-group">
+                <label asp-for="ClientId">Client ID <span class="cl-required">required</span></label>
+                <input asp-for="ClientId" class="form-control" placeholder="e.g. MyOrdersApp" />
+                <small class="form-text text-muted">The unique name the app sends when it signs in. Letters, numbers, . _ - : only. Cannot be changed later.</small>
+                <span asp-validation-for="ClientId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ClientName">Display name</label>
+                <input asp-for="ClientName" class="form-control" placeholder="e.g. My Orders" />
+                <span asp-validation-for="ClientName" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-0">
+                <label asp-for="Description">Description</label>
+                <input asp-for="Description" class="form-control" placeholder="Optional - what is this client for?" />
+            </div>
+        </div>
+
+        <div data-show-for="@((int)QuickClientTemplate.WebApp),@((int)QuickClientTemplate.Spa)">
+            <h2 class="cl-section">3. Where can users be sent back to?</h2>
+            <div class="cl-card cl-card-pad">
+                <div class="form-group">
+                    <label asp-for="RedirectUris">Sign-in redirect URLs</label>
+                    <textarea asp-for="RedirectUris" class="form-control" rows="3" placeholder="https://dev-myapp.clopay.com/signin-callback"></textarea>
+                    <small class="form-text text-muted">One per line. Must match exactly what the app sends.</small>
+                </div>
+                <div class="form-group mb-0">
+                    <label asp-for="PostLogoutRedirectUris">Sign-out redirect URLs</label>
+                    <textarea asp-for="PostLogoutRedirectUris" class="form-control" rows="2" placeholder="https://dev-myapp.clopay.com/"></textarea>
+                    <small class="form-text text-muted">One per line. Optional.</small>
+                </div>
+            </div>
+        </div>
+
+        <div data-show-for="@((int)QuickClientTemplate.WebApp),@((int)QuickClientTemplate.Spa),@((int)QuickClientTemplate.LegacyPassword)">
+            <h2 class="cl-section">Browser origins (CORS)</h2>
+            <div class="cl-card cl-card-pad">
+                <div class="form-group mb-0">
+                    <label asp-for="AllowedCorsOrigins">Allowed origins</label>
+                    <textarea asp-for="AllowedCorsOrigins" class="form-control" rows="2" placeholder="https://dev-myapp.clopay.com"></textarea>
+                    <small class="form-text text-muted">One per line. Only needed when a browser app calls the token endpoint directly.</small>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="cl-section">What can it access?</h2>
+        <div class="cl-card cl-card-pad">
+            @if (Model.AvailableScopes.Any())
+            {
+                <div class="cl-checks">
+                    @foreach (var scope in Model.AvailableScopes)
+                    {
+                        <label class="cl-check">
+                            <input type="checkbox" name="SelectedScopes" value="@scope" @(Model.SelectedScopes.Contains(scope) ? "checked" : "") />
+                            <span>@scope</span>
+                        </label>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">No scopes exist yet. Type them below, or create them under APIs &amp; Scopes.</p>
+            }
+            <div class="form-group mt-3 mb-0">
+                <label asp-for="ExtraScopes">Other scopes</label>
+                <input asp-for="ExtraScopes" class="form-control" placeholder="Optional - separate with spaces" />
+            </div>
+        </div>
+
+        <div class="cl-form-actions">
+            <button type="submit" class="btn btn-primary btn-lg">Create client</button>
+            <a asp-area="@CommonConsts.AdminUIArea" asp-action="Clients" class="btn btn-link">Cancel</a>
+            <span class="cl-advanced">Need every setting? <a asp-area="@CommonConsts.AdminUIArea" asp-action="Client">Use the advanced editor</a>.</span>
+        </div>
+    </form>
+</div>
+
+@section scripts {
+    <script>
+        $(function () {
+            var $form = $('#quick-client-form');
+            function refresh() {
+                var chosen = $form.find('input[name="Template"]:checked').val();
+                $form.find('[data-show-for]').each(function () {
+                    var allowed = String($(this).data('show-for')).split(',');
+                    $(this).toggle(allowed.indexOf(chosen) !== -1);
+                });
+                $form.find('.cl-choice').each(function () {
+                    $(this).toggleClass('selected', $(this).find('input').is(':checked'));
+                });
+            }
+            $form.on('change', 'input[name="Template"]', refresh);
+            refresh();
+        });
+    </script>
+}

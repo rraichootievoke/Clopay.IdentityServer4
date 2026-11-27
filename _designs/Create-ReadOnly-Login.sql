@@ -1,5 +1,5 @@
 -- =============================================================================
--- READ-ONLY SQL login for the Skoruba Admin UI (evaluation phase)
+-- READ-ONLY SQL login for the Clopay IAM Admin UI (evaluation phase)
 -- =============================================================================
 -- Purpose : let the Admin UI BROWSE the IdentityServer configuration (Clients, secrets list,
 --           API resources/scopes, grants) while the database itself refuses every write.
