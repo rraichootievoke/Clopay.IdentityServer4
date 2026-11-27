@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Clopay.IDPAdminUI": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": { "ASPNETCORE_ENVIRONMENT": "Local" },
+      "applicationUrl": "https://localhost:44303"
+    }
+  }
+}

@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>Clopay.IDPAdminUI</RootNamespace>
+    <AssemblyName>Clopay.IDPAdminUI</AssemblyName>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <UserSecretsId>b6f2c1a4-7d3e-4f58-9a21-3c8e5d4a7f10</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- IdentityServer4 data model (clients, resources, scopes, grants) - the schema of the Clopay IDP database -->
+    <PackageReference Include="IdentityServer4.EntityFramework" Version="4.1.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.11" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="8.0.11" />
+    <PackageReference Include="AutoMapper" Version="13.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Front-end build sources (gulp) - not part of the published site -->
+    <Content Remove="package.json;package-lock.json;node_modules\**" />
+    <None Include="package.json;package-lock.json;gulpfile.js" />
+    <Compile Remove="node_modules\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Clopay.IDPAdminUI.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="App_Data\" />
+    <Folder Include="Log\" />
+  </ItemGroup>
+
+</Project>

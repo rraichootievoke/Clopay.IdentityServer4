@@ -1,9 +1,0 @@
-{
-  // Serilog overlay for Production: write the "Log" table (shown on the Error log page) to the admin database instead of LocalDB.
-  // WriteTo index 2 is the MSSqlServer sink in serilog.json.
-  "Serilog": {
-    "WriteTo": {
-      "2": { "Args": { "connectionString": "Data Source=<PROD_SQL_SERVER>;Initial Catalog=IdentityServerAdminDB;Persist Security Info=True;User ID=<PROD_DB_USER>;Password=<DB_PASSWORD>;Connect Timeout=200;pooling=true;TrustServerCertificate=True;Max Pool Size=500" } }
-    }
-  }
-}

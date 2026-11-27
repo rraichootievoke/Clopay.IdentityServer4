@@ -1,0 +1,11 @@
+﻿@using System.Reflection
+@using Clopay.IDPAdminUI.Configuration
+
+@{
+    var runtimeVersion = typeof(AdminConfiguration)
+        .GetTypeInfo()
+        .Assembly
+        .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+}
+
+@runtimeVersion

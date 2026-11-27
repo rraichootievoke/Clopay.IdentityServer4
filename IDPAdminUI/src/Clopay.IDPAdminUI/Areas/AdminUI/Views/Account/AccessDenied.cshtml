@@ -1,0 +1,48 @@
+@using Clopay.IDPAdminUI.Configuration
+@using Clopay.IDPAdminUI.Configuration.Constants
+@inject AdminConfiguration AdminConfiguration
+@{
+    ViewBag.Title = "Access denied";
+    Layout = "_Layout";
+
+    string[] types = { "preferred_username", "name", "email", "sub" };
+    var identifiers = types
+        .SelectMany(t => User.FindAll(t).Select(c => new { Type = t, c.Value }))
+        .Where(x => !string.IsNullOrWhiteSpace(x.Value))
+        .ToList();
+}
+
+<div class="cl-page cl-narrow">
+    <div class="cl-denied">
+        <span class="oi oi-lock-locked" aria-hidden="true"></span>
+        <div>
+            <h1 class="cl-title">Access denied</h1>
+            <p class="cl-subtitle mb-0">You signed in successfully, but this account is not on the list of people allowed to use the IDP Admin UI.</p>
+        </div>
+    </div>
+
+    <div class="cl-card cl-card-pad mt-4">
+        <h2 class="cl-section mt-0">To get access</h2>
+        <p>Ask the person who looks after this site to add <strong>one</strong> of these values to <code>AdminConfiguration:AllowedAdmins</code>:</p>
+        @if (identifiers.Any())
+        {
+            <table class="table cl-table mb-0">
+                <thead><tr><th>Claim</th><th>Value</th></tr></thead>
+                <tbody>
+                    @foreach (var item in identifiers)
+                    {
+                        <tr><td>@item.Type</td><td><code>@item.Value</code></td></tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p class="text-muted mb-0">The sign-in service did not return any identifying details for this account.</p>
+        }
+    </div>
+
+    <div class="cl-form-actions">
+        <a asp-area="@CommonConsts.AdminUIArea" asp-controller="Account" asp-action="Logout" class="btn btn-secondary">Sign out</a>
+    </div>
+</div>

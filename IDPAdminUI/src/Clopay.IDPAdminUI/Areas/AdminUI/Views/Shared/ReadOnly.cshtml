@@ -1,0 +1,25 @@
+@using Clopay.IDPAdminUI.Configuration.Constants
+@{
+    ViewBag.Title = "Read-only mode";
+    Layout = "_Layout";
+}
+
+<div class="cl-page cl-narrow">
+    <div class="cl-denied">
+        <span class="oi oi-shield" aria-hidden="true"></span>
+        <div>
+            <h1 class="cl-title">Nothing was changed</h1>
+            <p class="cl-subtitle mb-0">This environment is in <strong>read-only mode</strong>, so saving, deleting and rotating secrets are switched off.</p>
+        </div>
+    </div>
+
+    <div class="cl-card cl-card-pad mt-4">
+        <p class="mb-2">To allow changes, the person who runs this site sets <code>AdminConfiguration:ReadOnlyMode</code> to <code>false</code> for this environment and restarts the site.</p>
+        <p class="text-muted mb-0">The data in the Clopay IDP database is untouched.</p>
+    </div>
+
+    <div class="cl-form-actions">
+        <a href="javascript:history.back()" class="btn btn-secondary">Go back</a>
+        <a asp-area="@CommonConsts.AdminUIArea" asp-controller="Home" asp-action="Index" class="btn btn-link">Home</a>
+    </div>
+</div>
