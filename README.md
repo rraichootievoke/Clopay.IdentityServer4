@@ -33,7 +33,6 @@ src/
   Clopay.IdentityServer4.Admin.EntityFramework* Data access (SQL Server)
   Clopay.IdentityServer4.Shared*          Shared helpers and configuration
 tests/                                     Unit tests
-cAppSettings/                              Reference copies of the Clopay IDP settings (source of the values below)
 _designs/                                  Handover notes and the read-only SQL login script
 Start-AdminLocal.ps1                       One-command local launcher
 ```
@@ -66,7 +65,7 @@ Or run from an IDE: start **STS** and **Admin** with `ASPNETCORE_ENVIRONMENT=Loc
 
 Each app has `appsettings.json` (neutral defaults) plus one file per environment, chosen by `ASPNETCORE_ENVIRONMENT`:
 
-| Environment | Meaning | IDP database (from `cAppSettings`) | Admin URL |
+| Environment | Meaning | IDP database | Admin URL |
 |---|---|---|---|
 | `Local` | your machine, LocalDB, seed allowed | LocalDB `ClopayAdminLocal` | `https://localhost:44303` |
 | `Development` | shared dev tier | `10.103.3.4` / `IdentityServerDev` | `https://dev-iamui.clopay.com` |
@@ -77,7 +76,7 @@ Each app has `appsettings.json` (neutral defaults) plus one file per environment
 The sign-in service (STS) for each environment is the Admin host name with `-sts` (for example `dev-iamui-sts.clopay.com`).
 **These host names are proposals - confirm them before deploying.**
 
-**Production is a placeholder.** There are no production values in `cAppSettings`, so `appsettings.Production.json` (Admin and STS) contains
+**Production is a placeholder.** No production values were available, so `appsettings.Production.json` (Admin and STS) contains
 `<PROD_...>` markers and the app will not start until every one is replaced (environment variables / Key Vault). Get the SQL server,
 IDP database name, SQL login and host names from the DBA / platform team, start with a read-only login, and get explicit approval.
 
@@ -95,14 +94,17 @@ Two kinds of database are involved:
 
 ### Secrets
 
-**No passwords are stored in git.** Connection strings contain `<DB_PASSWORD>` and the Admin sign-in client has
-`<ADMIN_CLIENT_SECRET>`. Supply real values at deploy time with environment variables or Key Vault, for example:
+The SQL logins for **Development, Test and Staging** are stored in their `appsettings.<Env>.json` files (copied from the Clopay IDP
+settings), so the app runs without extra setup. Treat the repository as sensitive: keep it private and rotate those passwords when
+convenient. Anything you do not want in the file can be overridden with environment variables or Key Vault:
 
 ```
 ConnectionStrings__ConfigurationDbConnection=Data Source=...;Password=...
 ConnectionStrings__PersistedGrantDbConnection=Data Source=...;Password=...
 AdminConfiguration__ClientSecret=...
 ```
+
+**Production has no stored values** - only `<PROD_...>` / `<DB_PASSWORD>` / `<ADMIN_CLIENT_SECRET>` placeholders, to be supplied at deploy time.
 
 ### Safety rules (read before changing anything)
 

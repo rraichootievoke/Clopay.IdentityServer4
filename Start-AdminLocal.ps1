@@ -20,8 +20,8 @@
     The first time, the admin database is empty, so the script creates its tables and the 'admin' user
     (you are asked to confirm before anything is written to a shared server).
 
-    The IDP connection string is read from cAppSettings\appsettings.<Environment>.json, so no secret is
-    copied into the repo. To make the UI unable to change the IDP database while you evaluate it, pass a
+    The IDP connection string is read from src\Clopay.IdentityServer4.Admin\appsettings.<Environment>.json
+    (ConfigurationDbConnection). To make the UI unable to change the IDP database while you evaluate it, pass a
     read-only SQL login with -ConfigConnectionString (see _designs\Create-ReadOnly-Login.sql).
 
     Sign in with the seeded user from src\Clopay.IdentityServer4.Admin\identitydata.json: 'admin' and the
@@ -99,11 +99,12 @@ if ($Stop) {
 if ($Environment -eq 'Production' -and -not $AllowProduction) { throw 'Refusing to point the Admin UI at Production without -AllowProduction (and a read-only login).' }
 
 # --- where is the IDP database?
-if (-not $IdpAppSettings) { $IdpAppSettings = Join-Path $repo "cAppSettings\appsettings.$Environment.json" }
+if (-not $IdpAppSettings) { $IdpAppSettings = Join-Path $src "$adminProj\appsettings.$Environment.json" }
 $fileCs = $null
-if (Test-Path $IdpAppSettings) { $fileCs = [regex]::Match((Get-Content $IdpAppSettings -Raw), '"IdentityServerDB"\s*:\s*"([^"]+)"').Groups[1].Value }
+if (Test-Path $IdpAppSettings) { $fileCs = [regex]::Match((Get-Content $IdpAppSettings -Raw), '"(?:ConfigurationDbConnection|IdentityServerDB)"\s*:\s*"([^"]+)"').Groups[1].Value }
+if ($fileCs -match '<[A-Z_]+>') { Write-Warning "$IdpAppSettings still contains placeholders ($($Matches[0])) - pass -ConfigConnectionString and -AdminConnectionString instead."; $fileCs = $null }
 if (-not $ConfigConnectionString) {
-    if (-not $fileCs) { throw "No IdentityServerDB connection string found in $IdpAppSettings (pass -IdpAppSettings or -ConfigConnectionString)" }
+    if (-not $fileCs) { throw "No usable ConfigurationDbConnection found in $IdpAppSettings (pass -IdpAppSettings or -ConfigConnectionString)" }
     $ConfigConnectionString = $fileCs
 }
 Write-Host ("IDP database   : {0} / {1}  (as {2})" -f (Get-Part $ConfigConnectionString '(?:Data Source|Server)=([^;]+)'), (Get-Part $ConfigConnectionString '(?:Initial Catalog|Database)=([^;]+)'), (Get-Part $ConfigConnectionString 'User ID=([^;]+)'))
@@ -114,7 +115,7 @@ if ($UseLocalDb) {
 } elseif ($AdminConnectionString) {
     $adminCs = $AdminConnectionString; $adminLabel = ("{0} / {1}" -f (Get-Part $adminCs '(?:Data Source|Server)=([^;]+)'), (Get-Part $adminCs '(?:Initial Catalog|Database)=([^;]+)')); $shared = $true
 } else {
-    # Same server and login as the IDP database (from cAppSettings), but the separate admin database.
+    # Same server and login as the IDP database (from the Admin appsettings for this environment), but the separate admin database.
     # Deliberately NOT derived from -ConfigConnectionString: that may be a read-only login, and the admin database needs to be writable.
     if (-not $fileCs) { throw 'Cannot work out the admin database. Pass -AdminConnectionString, or use -UseLocalDb.' }
     $adminCs = [regex]::Replace($fileCs, '(Initial Catalog|Database)=[^;]+', "`$1=$adminDbName", 'IgnoreCase')
