@@ -40,20 +40,27 @@ Start-AdminLocal.ps1                       One-command local launcher
 
 ## Run it locally
 
-Needs the .NET 6+ SDK, SQL Server LocalDB, and (for the Clopay database) network access to the SQL server.
+Needs the .NET 6+ SDK, Windows PowerShell, and network access to the SQL server of the environment you pick
+(or LocalDB if you use `-UseLocalDb`).
 
 ```powershell
-.\Start-AdminLocal.ps1                                    # reads the Test IDP database
-.\Start-AdminLocal.ps1 -ConfigConnectionString '<read-only connection string>'   # recommended
+.\Start-AdminLocal.ps1                          # Test IDP database; admin database = IdentityServerAdminDB on the same server
+.\Start-AdminLocal.ps1 -Environment Development
+.\Start-AdminLocal.ps1 -ConfigConnectionString '<read-only connection string>'   # recommended for the IDP database
+.\Start-AdminLocal.ps1 -AdminConnectionString '<admin database connection string>'
+.\Start-AdminLocal.ps1 -UseLocalDb              # admin database on LocalDB instead of SQL Server
 .\Start-AdminLocal.ps1 -Stop
 ```
 
-Open <https://localhost:44303> and sign in with user **`admin`** and the seeded local password from
-`src/Clopay.IdentityServer4.Admin/identitydata.json` (`Pa$$word123` - note the **two** `$`). That account exists only in
-your throw-away LocalDB database.
+The script rebuilds, creates the admin database tables on the first run (it asks before writing to a shared server), then starts the
+STS and the Admin. Open <https://localhost:44303> and sign in as **`admin`** with the password in
+`src/Clopay.IdentityServer4.Admin/identitydata.json` (`Pa$$word123` - note the **two** `$`). **On a shared SQL server, change that
+password after the first sign-in.**
 
-Or run from an IDE: start **STS** and **Admin** with `ASPNETCORE_ENVIRONMENT=Local` (the default launch profile).
-The first run of the Admin creates and seeds the LocalDB database.
+The IDP database is never migrated or seeded. If the admin database does not exist yet, the SQL login needs permission to create
+it - otherwise ask a DBA to create an empty `IdentityServerAdminDB`.
+
+Or run from an IDE: start **STS** and **Admin** with `ASPNETCORE_ENVIRONMENT=Local` (the default launch profile; uses LocalDB).
 
 ## Configuration
 
@@ -65,10 +72,19 @@ Each app has `appsettings.json` (neutral defaults) plus one file per environment
 | `Development` | shared dev tier | `10.103.3.4` / `IdentityServerDev` | `https://dev-iamui.clopay.com` |
 | `Test` | QA | `10.105.3.4` / `IdentityServerDB_DBTest` | `https://test-iamui.clopay.com` |
 | `Staging` | pre-production | `MAS-SQL-01T` / `IdentityServerDB_DBStaging_New` | `https://staging-iamui.clopay.com` |
-| `Production` | live | `10.109.3.5` / `identityserverdb` | `https://prod-iamui.clopay.com` |
+| `Production` | live - **placeholders only** | `<PROD_SQL_SERVER>` / `<PROD_IDP_DATABASE>` | `https://<PROD_ADMIN_HOST>` |
 
 The sign-in service (STS) for each environment is the Admin host name with `-sts` (for example `dev-iamui-sts.clopay.com`).
 **These host names are proposals - confirm them before deploying.**
+
+**Production is a placeholder.** There are no production values in `cAppSettings`, so `appsettings.Production.json` (Admin and STS) contains
+`<PROD_...>` markers and the app will not start until every one is replaced (environment variables / Key Vault). Get the SQL server,
+IDP database name, SQL login and host names from the DBA / platform team, start with a read-only login, and get explicit approval.
+
+Each non-Local environment also has two one-time seed overlays in the Admin project, used only to bootstrap `IdentityServerAdminDB`:
+`identityserverdata.<Env>.json` (the sign-in client with that environment's redirect URLs) and `identitydata.<Env>.json` (the first admin
+account, with **no default password** - supply `IdentityData__Users__0__Password`; the client secret comes from
+`IdentityServerData__Clients__0__ClientSecrets__0__Value`).
 
 Two kinds of database are involved:
 

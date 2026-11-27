@@ -26,7 +26,7 @@
 }
 
 /* ---- Base --------------------------------------------------------------- */
-html { font-size: clamp(13px, 0.25vw + 12px, 14px); }
+html { font-size: clamp(12px, 0.2vw + 11px, 13px); }
 
 body {
     background: var(--cl-bg);
@@ -333,19 +333,22 @@ a, .btn, .nav-link, .dropdown-item, .form-control, .custom-select, .page-link,
 .btn:active:not(:disabled) { transform: translateY(1px); }
 .btn-primary:hover:not(:disabled), .btn-secondary:hover:not(:disabled) { box-shadow: 0 2px 8px rgba(16, 24, 40, .18); }
 
+/* NOTE: use fill-mode "backwards", never "both"/"forwards". A finished animation that keeps its final
+   transform/opacity leaves a stacking context on the page container, which puts Bootstrap modals (inside the
+   page) UNDER their own backdrop - the dialog then cannot be clicked or closed. */
 @keyframes cl-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 @keyframes cl-drop { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
 @keyframes cl-pop  { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: none; } }
 
-.cl-main > * { animation: cl-rise .32s ease both; }
-.cl-tiles > * { animation: cl-rise .35s ease both; }
+.cl-main > * { animation: cl-rise .32s ease backwards; }
+.cl-tiles > * { animation: cl-rise .35s ease backwards; }
 .cl-tiles > *:nth-child(2) { animation-delay: .03s; } .cl-tiles > *:nth-child(3) { animation-delay: .06s; }
 .cl-tiles > *:nth-child(4) { animation-delay: .09s; } .cl-tiles > *:nth-child(5) { animation-delay: .12s; }
 .cl-tiles > *:nth-child(6) { animation-delay: .15s; } .cl-tiles > *:nth-child(7) { animation-delay: .18s; }
 .cl-tiles > *:nth-child(8) { animation-delay: .21s; }
-.dropdown-menu.show { animation: cl-drop .16s ease both; }
-.tab-pane.active, .cl-secret-box, .cl-success-banner { animation: cl-pop .28s ease both; }
-.table tbody tr { animation: cl-rise .25s ease both; }
+.dropdown-menu.show { animation: cl-drop .16s ease backwards; }
+.tab-pane.active, .cl-secret-box, .cl-success-banner { animation: cl-pop .28s ease backwards; }
+.table tbody tr { animation: cl-rise .25s ease backwards; }
 
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
