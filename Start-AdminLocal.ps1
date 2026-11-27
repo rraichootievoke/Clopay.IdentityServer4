@@ -69,7 +69,7 @@ if ($Environment -eq 'Production' -and -not $AllowProduction) { throw 'Refusing 
 
 # --- where is the IDP database?
 if (-not $ConfigConnectionString) {
-    if (-not $IdpAppSettings) { $IdpAppSettings = Join-Path $repo "..\APISecurity\Clopay.IdentityServer\src\api\AdminApi\appsettings.$Environment.json" }
+    if (-not $IdpAppSettings) { $IdpAppSettings = Join-Path $repo "cAppSettings\appsettings.$Environment.json" }
     if (-not (Test-Path $IdpAppSettings)) { throw "IDP appsettings not found: $IdpAppSettings (pass -IdpAppSettings or -ConfigConnectionString)" }
     $ConfigConnectionString = [regex]::Match((Get-Content $IdpAppSettings -Raw), '"IdentityServerDB"\s*:\s*"([^"]+)"').Groups[1].Value
     if (-not $ConfigConnectionString) { throw "No IdentityServerDB connection string in $IdpAppSettings" }
