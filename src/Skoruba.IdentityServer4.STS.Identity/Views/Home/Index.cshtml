@@ -1,109 +1,42 @@
-﻿@using IdentityServer4.Extensions
-@using Microsoft.AspNetCore.Mvc.Localization
+@using IdentityServer4.Extensions
 @using Skoruba.IdentityServer4.STS.Identity.Configuration.Interfaces
-@inject IViewLocalizer Localizer
 @inject IRootConfiguration RootConfiguration
-<div class="welcome-block px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
-    <h1 class="display-4"><img class="img-fluid" alt="Logo" src="@UrlHelper.Content(RootConfiguration.AdminConfiguration.HomePageLogoUri)"><br />@RootConfiguration.AdminConfiguration.PageTitle</h1>
-    <p class="lead">@Localizer["SubTitle", RootConfiguration.AdminConfiguration.PageTitle]</p>
-</div>
 
-<div class="card-deck mb-3 text-center">
-    @if (!User.IsAuthenticated())
-    {
-        <div class="card mb-4 box-shadow">
-            <div class="card-header">
-                <h4 class="my-0 font-weight-normal">@Localizer["Login"]</h4>
-            </div>
-            <div class="card-body">
-                <h1 class="card-title">
-                    <span class="oi oi-lock-locked" title="@Localizer["Login"]" aria-hidden="true"></span>
-                </h1>
-                <a asp-controller="Account" asp-action="Login" class="btn btn-lg btn-block btn-primary">@Localizer["Login"]</a>
-            </div>
-        </div>
-    }
+<div class="cl-page cl-narrow">
+    <h1 class="cl-title">@RootConfiguration.AdminConfiguration.PageTitle</h1>
+    <p class="cl-subtitle">Sign-in service for the Clopay IAM Admin site.</p>
 
-    @if (User.IsAuthenticated())
-    {
-        <div class="card mb-4 box-shadow">
-            <div class="card-header">
-                <h4 class="my-0 font-weight-normal">@Localizer["Grants"]</h4>
-            </div>
-            <div class="card-body">
-                <h1 class="card-title">
-                    <span class="oi oi-key" title="@Localizer["Grants"]" aria-hidden="true"></span>
-                </h1>
-                <a asp-controller="Grants" asp-action="Index" class="btn btn-lg btn-block btn-primary">@Localizer["Grants"]</a>
-            </div>
-        </div>
-    }
-
-    <div class="card mb-4 box-shadow">
-        <div class="card-header">
-            <h4 class="my-0 font-weight-normal">@Localizer["Discovery"]</h4>
-        </div>
-        <div class="card-body">
-            <h1 class="card-title">
-                <span class="oi oi-monitor" title="@Localizer["Discovery"]" aria-hidden="true"></span>
-            </h1>
-            <a href="~/.well-known/openid-configuration" class="btn btn-lg btn-block btn-outline-primary">@Localizer["Discovery"]</a>
-        </div>
+    <div class="cl-tiles">
+        @if (!User.IsAuthenticated())
+        {
+            <a class="cl-tile cl-tile-accent" asp-controller="Account" asp-action="Login">
+                <span class="cl-tile-icon oi oi-lock-locked" aria-hidden="true"></span>
+                <span class="cl-tile-label">Sign in</span>
+                <span class="cl-tile-hint">Use your admin account</span>
+            </a>
+        }
+        else
+        {
+            <a class="cl-tile" asp-controller="Manage" asp-action="Index">
+                <span class="cl-tile-icon oi oi-person" aria-hidden="true"></span>
+                <span class="cl-tile-label">My profile</span>
+                <span class="cl-tile-hint">Name, email and contact details</span>
+            </a>
+            <a class="cl-tile" asp-controller="Manage" asp-action="ChangePassword">
+                <span class="cl-tile-icon oi oi-pencil" aria-hidden="true"></span>
+                <span class="cl-tile-label">Change password</span>
+                <span class="cl-tile-hint">Keep your admin account secure</span>
+            </a>
+            <a class="cl-tile" asp-controller="Manage" asp-action="TwoFactorAuthentication">
+                <span class="cl-tile-icon oi oi-phone" aria-hidden="true"></span>
+                <span class="cl-tile-label">Two-factor sign-in</span>
+                <span class="cl-tile-hint">Add an authenticator app</span>
+            </a>
+            <a class="cl-tile" asp-controller="Grants" asp-action="Index">
+                <span class="cl-tile-icon oi oi-key" aria-hidden="true"></span>
+                <span class="cl-tile-label">Apps with access</span>
+                <span class="cl-tile-hint">Review and revoke access</span>
+            </a>
+        }
     </div>
-
-    @if (User.IsAuthenticated())
-    {
-        <div class="card mb-4 box-shadow">
-            <div class="card-header">
-                <h4 class="my-0 font-weight-normal">@Localizer["ManageProfile"]</h4>
-            </div>
-            <div class="card-body">
-                <h1 class="card-title">
-                    <span class="oi oi-person" title="@Localizer["ManageProfile"]" aria-hidden="true"></span>
-                </h1>
-                <a asp-controller="Manage" asp-action="Index" class="btn btn-lg btn-block btn-primary">@Localizer["ManageProfile"]</a>
-            </div>
-        </div>
-    }
 </div>
-@if (User.IsAuthenticated())
-{
-    <div class="card-deck mb-3 text-center">
-
-        <div class="card mb-4 box-shadow">
-            <div class="card-header">
-                <h4 class="my-0 font-weight-normal">@Localizer["ManagePersonalData"]</h4>
-            </div>
-            <div class="card-body">
-                <h1 class="card-title">
-                    <span class="oi oi-cloud-download" title="@Localizer["ManagePersonalData"]" aria-hidden="true"></span>
-                </h1>
-                <a asp-controller="Manage" asp-action="PersonalData" class="btn btn-lg btn-block btn-outline-primary">@Localizer["ManagePersonalData"]</a>
-            </div>
-        </div>
-
-        <div class="card mb-4 box-shadow">
-            <div class="card-header">
-                <h4 class="my-0 font-weight-normal">@Localizer["2FA"]</h4>
-            </div>
-            <div class="card-body">
-                <h1 class="card-title">
-                    <span class="oi oi-phone" title="@Localizer["2FA"]" aria-hidden="true"></span>
-                </h1>
-                <a asp-controller="Manage" asp-action="TwoFactorAuthentication" class="btn btn-lg btn-block btn-primary">@Localizer["2FA"]</a>
-            </div>
-        </div>
-
-        <div class="card mb-4 box-shadow">
-            <div class="card-header">
-                <h4 class="my-0 font-weight-normal">@Localizer["ChangePassword"]</h4>
-            </div>
-            <div class="card-body">
-                <h1 class="card-title">
-                    <span class="oi oi-pencil" title="@Localizer["ChangePassword"]" aria-hidden="true"></span>
-                </h1>
-                <a asp-controller="Manage" asp-action="ChangePassword" class="btn btn-lg btn-block btn-outline-primary">@Localizer["ChangePassword"]</a>
-            </div>
-        </div>
-    </div>
-}

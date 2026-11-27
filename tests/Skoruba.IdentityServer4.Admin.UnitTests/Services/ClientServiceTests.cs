@@ -6,6 +6,7 @@ using IdentityServer4.EntityFramework.Options;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Skoruba.AuditLogging.Services;
+using Skoruba.IdentityServer4.Admin.BusinessLogic.Dtos.Configuration;
 using Skoruba.IdentityServer4.Admin.BusinessLogic.Mappers;
 using Skoruba.IdentityServer4.Admin.BusinessLogic.Resources;
 using Skoruba.IdentityServer4.Admin.BusinessLogic.Services;
@@ -723,6 +724,124 @@ namespace Skoruba.IdentityServer4.Admin.UnitTests.Services
 
                 //Assert after delete it
                 deleteClientSecret.Should().BeNull();
+            }
+        }
+
+        [Fact]
+        public async Task RotateClientSecretAsync_WithGracePeriod_KeepsOldSecretUntilItExpires()
+        {
+            using (var context = new IdentityServerConfigurationDbContext(_dbContextOptions, _storeOptions))
+            {
+                var clientService = GetClientService(context);
+
+                var client = ClientDtoMock.GenerateRandomClient(0);
+                await clientService.AddClientAsync(client);
+                var clientId = (await context.Clients.SingleAsync(x => x.ClientId == client.ClientId)).Id;
+
+                await clientService.AddClientSecretAsync(ClientDtoMock.GenerateRandomClientSecret(0, clientId));
+                var oldSecretId = (await context.ClientSecrets.SingleAsync(x => x.Client.Id == clientId)).Id;
+
+                var result = await clientService.RotateClientSecretAsync(clientId, 7);
+
+                result.NewSecret.Should().HaveLength(64);
+                result.RetiredSecrets.Should().Be(1);
+                result.GracePeriodEndsUtc.Should().BeCloseTo(DateTime.UtcNow.AddDays(7), TimeSpan.FromMinutes(1));
+
+                var secrets = await context.ClientSecrets.Where(x => x.Client.Id == clientId).ToListAsync();
+                secrets.Should().HaveCount(2);
+
+                // old secret still exists but now expires at the end of the grace period
+                secrets.Single(x => x.Id == oldSecretId).Expiration.Should().BeCloseTo(DateTime.UtcNow.AddDays(7), TimeSpan.FromMinutes(1));
+
+                // new secret never expires and only its hash is stored
+                var newSecret = secrets.Single(x => x.Id != oldSecretId);
+                newSecret.Expiration.Should().BeNull();
+                newSecret.Value.Should().NotBe(result.NewSecret);
+            }
+        }
+
+        [Fact]
+        public async Task RotateClientSecretAsync_WithoutGracePeriod_RevokesOldSecrets()
+        {
+            using (var context = new IdentityServerConfigurationDbContext(_dbContextOptions, _storeOptions))
+            {
+                var clientService = GetClientService(context);
+
+                var client = ClientDtoMock.GenerateRandomClient(0);
+                await clientService.AddClientAsync(client);
+                var clientId = (await context.Clients.SingleAsync(x => x.ClientId == client.ClientId)).Id;
+
+                await clientService.AddClientSecretAsync(ClientDtoMock.GenerateRandomClientSecret(0, clientId));
+                await clientService.AddClientSecretAsync(ClientDtoMock.GenerateRandomClientSecret(0, clientId));
+
+                var result = await clientService.RotateClientSecretAsync(clientId, 0);
+
+                result.RetiredSecrets.Should().Be(2);
+                result.GracePeriodEndsUtc.Should().BeNull();
+
+                // only the freshly generated secret is left
+                var secrets = await context.ClientSecrets.Where(x => x.Client.Id == clientId).ToListAsync();
+                secrets.Should().HaveCount(1);
+                secrets.Single().Description.Should().StartWith("Rotated ");
+            }
+        }
+
+        [Fact]
+        public async Task QuickCreateClientAsync_WebApp_CreatesClientWithSecretAndPkce()
+        {
+            using (var context = new IdentityServerConfigurationDbContext(_dbContextOptions, _storeOptions))
+            {
+                var clientService = GetClientService(context);
+
+                var result = await clientService.QuickCreateClientAsync(new ClientQuickCreateDto
+                {
+                    ClientId = "MyOrdersApp",
+                    Template = QuickClientTemplate.WebApp,
+                    RedirectUris = "https://dev-orders.clopay.com/signin-oidc\nhttps://localhost:5001/signin-oidc",
+                    SelectedScopes = new System.Collections.Generic.List<string> { "openid", "profile" },
+                    ExtraScopes = "ccaapi"
+                });
+
+                result.Secret.Should().NotBeNullOrEmpty();
+
+                var entity = await context.Clients
+                    .Include(x => x.AllowedGrantTypes)
+                    .Include(x => x.RedirectUris)
+                    .Include(x => x.AllowedScopes)
+                    .Include(x => x.ClientSecrets)
+                    .SingleAsync(x => x.ClientId == "MyOrdersApp");
+
+                entity.ClientName.Should().Be("MyOrdersApp");
+                entity.RequirePkce.Should().BeTrue();
+                entity.RequireClientSecret.Should().BeTrue();
+                entity.RequireConsent.Should().BeFalse();
+                entity.AllowedGrantTypes.Select(x => x.GrantType).Should().BeEquivalentTo(new[] { "authorization_code" });
+                entity.RedirectUris.Should().HaveCount(2);
+                entity.AllowedScopes.Select(x => x.Scope).Should().BeEquivalentTo(new[] { "openid", "profile", "ccaapi" });
+                entity.ClientSecrets.Should().HaveCount(1);
+            }
+        }
+
+        [Fact]
+        public async Task QuickCreateClientAsync_Spa_HasNoSecret()
+        {
+            using (var context = new IdentityServerConfigurationDbContext(_dbContextOptions, _storeOptions))
+            {
+                var clientService = GetClientService(context);
+
+                var result = await clientService.QuickCreateClientAsync(new ClientQuickCreateDto
+                {
+                    ClientId = "MyAngularApp",
+                    Template = QuickClientTemplate.Spa,
+                    RedirectUris = "https://dev-app.clopay.com/callback"
+                });
+
+                result.Secret.Should().BeNull();
+
+                var entity = await context.Clients.Include(x => x.ClientSecrets).SingleAsync(x => x.ClientId == "MyAngularApp");
+                entity.RequireClientSecret.Should().BeFalse();
+                entity.RequirePkce.Should().BeTrue();
+                entity.ClientSecrets.Should().BeEmpty();
             }
         }
     }

@@ -127,6 +127,9 @@ namespace Skoruba.IdentityServer4.Admin
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.ConfigureKestrel(options => options.AddServerHeader = false);
+                    // Serve the UI libraries' wwwroot (css/js) from the build output in every environment (e.g. Local),
+                    // not only in Development. Does nothing in a published app.
+                    webBuilder.UseStaticWebAssets();
                     webBuilder.UseStartup<Startup>();
                 })
                 .UseSerilog((hostContext, loggerConfig) =>

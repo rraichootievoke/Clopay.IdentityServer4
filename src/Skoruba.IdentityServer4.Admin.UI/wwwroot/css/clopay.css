@@ -316,3 +316,8 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--cl-maroon); }
 .cl-login .card-header { background: var(--cl-black); color: #fff; border-bottom: 3px solid var(--cl-gold); font-weight: 500; }
 .cl-login .input-group-text { background: var(--cl-bg); color: var(--cl-slate); }
 .cl-login .btn-lg { padding: .5rem 1.6rem; }
+
+/* Links rendered by view components inside the black header */
+.cl-header .btn-outline-primary { color: #fff; border-color: rgba(255, 255, 255, .5); }
+.cl-header .btn-outline-primary:hover { background: var(--cl-gold); border-color: var(--cl-gold); color: var(--cl-black); }
+.cl-header .dropdown-menu a { color: var(--cl-ink); }

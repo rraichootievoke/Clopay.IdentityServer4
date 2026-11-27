@@ -80,7 +80,7 @@ Stop-Apps
 foreach ($proj in 'Skoruba.IdentityServer4.Admin', 'Skoruba.IdentityServer4.STS.Identity') {
     if (-not (Test-Path (Join-Path $src "$proj\bin\Release"))) { Write-Host "Building $proj ..."; & dotnet build (Join-Path $src "$proj\$proj.csproj") -c Release -v q -nologo | Out-Null }
 }
-$env:ASPNETCORE_ENVIRONMENT = 'Development'
+$env:ASPNETCORE_ENVIRONMENT = 'Local'   # appsettings.Local.json in both apps (the -Environment parameter only picks which IDP database to read)
 
 # --- first run: create + seed ONLY the local database (the Admin app owns migrations/seed for all contexts)
 if (-not (Test-LocalDb)) {
@@ -104,7 +104,7 @@ $env:DatabaseMigrationsConfiguration__ApplyDatabaseMigrations = 'false'; $env:Se
 $env:AdminConfiguration__IdentityServerBaseUrl    = 'https://localhost:44310'
 $env:AdminConfiguration__IdentityAdminRedirectUri = 'https://localhost:44303/signin-oidc'
 $env:AdminConfiguration__IdentityAdminBaseUrl     = 'https://localhost:44303'
-$env:AdminConfiguration__ClientSecret = [regex]::Match((Get-Content (Join-Path $src 'Skoruba.IdentityServer4.Admin\appsettings.json') -Raw), '"ClientSecret"\s*:\s*"([^"]+)"').Groups[1].Value
+$env:AdminConfiguration__ClientSecret = [regex]::Match((Get-Content (Join-Path $src 'Skoruba.IdentityServer4.Admin\appsettings.Local.json') -Raw), '"ClientSecret"\s*:\s*"([^"]+)"').Groups[1].Value
 Set-LocalConnections
 Start-App 'sts' 'Skoruba.IdentityServer4.STS.Identity' 'https://localhost:44310'
 if (-not (Wait-Http 'https://localhost:44310/.well-known/openid-configuration' 120)) { throw "STS did not start - see $run\sts.out.log" }
