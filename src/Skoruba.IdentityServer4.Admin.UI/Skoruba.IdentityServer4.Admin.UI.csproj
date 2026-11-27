@@ -90,8 +90,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AspNetCore.HealthChecks.MySql" Version="6.0.1" />
-    <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="6.0.1" />
     <PackageReference Include="AspNetCore.HealthChecks.OpenIdConnectServer" Version="6.0.1" />
     <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="6.0.1" />
     <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="6.0.2" />
