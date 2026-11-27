@@ -78,7 +78,10 @@ Write-Host ("IDP database : {0} / {1}  (as {2})" -f ([regex]::Match($ConfigConne
 
 Stop-Apps
 foreach ($proj in 'Skoruba.IdentityServer4.Admin', 'Skoruba.IdentityServer4.STS.Identity') {
-    if (-not (Test-Path (Join-Path $src "$proj\bin\Release"))) { Write-Host "Building $proj ..."; & dotnet build (Join-Path $src "$proj\$proj.csproj") -c Release -v q -nologo | Out-Null }
+    # Always build (incremental, fast when nothing changed) - a stale bin\Release silently serves old views and old CSS.
+    Write-Host "Building $proj ..."
+    $out = & dotnet build (Join-Path $src "$proj\$proj.csproj") -c Release -v q -nologo 2>&1
+    if ($LASTEXITCODE -ne 0) { $out | Select-Object -Last 40 | ForEach-Object { Write-Host $_ }; throw "Build failed for $proj - fix the errors above." }
 }
 $env:ASPNETCORE_ENVIRONMENT = 'Local'   # appsettings.Local.json in both apps (the -Environment parameter only picks which IDP database to read)
 
