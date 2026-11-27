@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using Moq;
 using Skoruba.IdentityServer4.Admin.UI.Helpers.Identity;
@@ -8,6 +8,7 @@ using Xunit;
 
 namespace Skoruba.IdentityServer4.Admin.UnitTests.Helpers
 {
+    [Trait("Category", "Unit")]
     public class IdentityErrorDescriberTests
     {
         [Theory]

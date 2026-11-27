@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -23,6 +23,7 @@ using Xunit;
 
 namespace Skoruba.IdentityServer4.Admin.UnitTests.Services
 {
+    [Trait("Category", "Unit")]
     public class IdentityServiceTests
     {
         public IdentityServiceTests()

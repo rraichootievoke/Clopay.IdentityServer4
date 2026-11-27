@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -12,6 +12,7 @@ using Xunit;
 
 namespace Skoruba.IdentityServer4.Admin.UnitTests.Repositories
 {
+    [Trait("Category", "Unit")]
     public class IdentityResourceRepositoryTests
     {
         private readonly DbContextOptions<IdentityServerConfigurationDbContext> _dbContextOptions;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -7,6 +7,7 @@ using Xunit;
 
 namespace Skoruba.IdentityServer4.Admin.UnitTests.Controllers
 {
+    [Trait("Category", "Unit")]
     public class HomeControllerTests
     {
         private readonly IServiceProvider _serviceProvider;

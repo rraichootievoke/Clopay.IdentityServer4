@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using FluentAssertions;
 using Skoruba.IdentityServer4.Admin.BusinessLogic.Mappers;
 using Skoruba.IdentityServer4.Admin.BusinessLogic.Mappers.Converters;
@@ -7,6 +7,7 @@ using Xunit;
 
 namespace Skoruba.IdentityServer4.Admin.UnitTests.Mappers
 {
+	[Trait("Category", "Unit")]
 	public class ApiResourceMappers
 	{
 		[Fact]

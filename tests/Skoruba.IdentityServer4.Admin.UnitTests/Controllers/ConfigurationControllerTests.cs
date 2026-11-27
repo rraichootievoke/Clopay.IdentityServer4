@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -33,6 +33,7 @@ using Xunit;
 
 namespace Skoruba.IdentityServer4.Admin.UnitTests.Controllers
 {
+    [Trait("Category", "Unit")]
     public class ConfigurationControllerTests
     {
         [Fact]

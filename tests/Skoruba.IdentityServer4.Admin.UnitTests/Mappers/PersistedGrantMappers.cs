@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using FluentAssertions;
 using Skoruba.IdentityServer4.Admin.BusinessLogic.Mappers;
 using Skoruba.IdentityServer4.Admin.UnitTests.Mocks;
@@ -6,6 +6,7 @@ using Xunit;
 
 namespace Skoruba.IdentityServer4.Admin.UnitTests.Mappers
 {
+    [Trait("Category", "Unit")]
     public class PersistedGrantMappers
     {
         [Fact]

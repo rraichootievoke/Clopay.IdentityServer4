@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -33,6 +33,7 @@ using System.Security.Claims;
 
 namespace Skoruba.IdentityServer4.Admin.UnitTests.Controllers
 {
+    [Trait("Category", "Unit")]
     public class IdentityControllerTests
     {
         private IIdentityService<UserDto<string>, RoleDto<string>,

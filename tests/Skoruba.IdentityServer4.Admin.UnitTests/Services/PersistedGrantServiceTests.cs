@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IdentityServer4.EntityFramework.Options;
@@ -17,6 +17,7 @@ using Xunit;
 
 namespace Skoruba.IdentityServer4.Admin.UnitTests.Services
 {
+    [Trait("Category", "Unit")]
     public class PersistedGrantServiceTests
     {
         public PersistedGrantServiceTests()
