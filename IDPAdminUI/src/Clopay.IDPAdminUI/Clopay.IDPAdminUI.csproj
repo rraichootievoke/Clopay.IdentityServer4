@@ -23,9 +23,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Known advisories of IdentityServer4 4.1.2 (the same ones suppressed in Clopay.IdentityServer). This app only uses its
+         EntityFramework data model; it does not host an IdentityServer, so the server-side issues do not apply. -->
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-55p7-v223-x366" />
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-ff4q-64jc-gx98" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Front-end build sources (gulp) - not part of the published site -->
     <Content Remove="package.json;package-lock.json;node_modules\**" />
-    <None Include="package.json;package-lock.json;gulpfile.js" />
     <Compile Remove="node_modules\**" />
   </ItemGroup>
 

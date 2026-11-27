@@ -16,7 +16,8 @@ namespace Clopay.IDPAdminUI.Core.Middleware
             "font-src 'self' data:; " +
             "style-src 'self' 'unsafe-inline'; " +
             "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
-            "frame-ancestors 'self'; base-uri 'self'; form-action 'self'";
+            "frame-ancestors 'self'; base-uri 'self'";
+        // (no form-action: Chrome applies it to redirects too, which would block the redirect to the IDP sign-in after an expired session)
 
         private readonly RequestDelegate _next;
 
