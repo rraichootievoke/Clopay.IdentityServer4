@@ -33,6 +33,7 @@ src/
   Clopay.IdentityServer4.Admin.EntityFramework* Data access (SQL Server)
   Clopay.IdentityServer4.Shared*          Shared helpers and configuration
 tests/                                     Unit tests
+deploy/                                    Publish-IIS.ps1 (build packages) and Deploy-IIS.ps1 (safe in-place deploy)
 _designs/                                  Handover notes and the read-only SQL login script
 Start-AdminLocal.ps1                       One-command local launcher
 ```
@@ -122,6 +123,11 @@ AdminConfiguration__ClientSecret=...
 dotnet build Clopay.IdentityServer4.Admin.sln
 dotnet test  tests/Clopay.IdentityServer4.Admin.UnitTests
 ```
+
+## Deploy to IIS
+
+See [DEPLOY-IIS.md](DEPLOY-IIS.md): `deploy\Publish-IIS.ps1 -Environment <Env>` builds the packages, `deploy\Deploy-IIS.ps1` installs one into an
+IIS folder with a backup first.
 
 ## Licence
 

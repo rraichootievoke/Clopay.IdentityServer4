@@ -1,0 +1,9 @@
+{
+  // Serilog overlay for Test: write the "Log" table (shown on the Error log page) to the admin database instead of LocalDB.
+  // WriteTo index 2 is the MSSqlServer sink in serilog.json.
+  "Serilog": {
+    "WriteTo": {
+      "2": { "Args": { "connectionString": "Data Source=10.105.3.4;Initial Catalog=IdentityServerAdminDB;Persist Security Info=True;User ID=PortalAdmin;Password=_EDBTestServer160923;Connect Timeout=200;pooling=true;Max Pool Size=500" } }
+    }
+  }
+}

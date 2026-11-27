@@ -1,0 +1,9 @@
+{
+  // Serilog overlay for Staging: write the "Log" table (shown on the Error log page) to the admin database instead of LocalDB.
+  // WriteTo index 2 is the MSSqlServer sink in serilog.json.
+  "Serilog": {
+    "WriteTo": {
+      "2": { "Args": { "connectionString": "Data Source=MAS-SQL-01T;Initial Catalog=IdentityServerAdminDB;Persist Security Info=True;User ID=PortalAdmin;Password=PortalAdmin@123;Connect Timeout=200;pooling=true;TrustServerCertificate=True;Max Pool Size=100" } }
+    }
+  }
+}

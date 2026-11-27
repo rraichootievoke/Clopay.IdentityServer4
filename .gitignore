@@ -285,3 +285,6 @@ __pycache__/
 # Test output
 TestResults/
 coverage/
+
+# Development signing key (generated at runtime)
+tempkey.jwk

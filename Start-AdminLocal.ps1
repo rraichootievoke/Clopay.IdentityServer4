@@ -83,7 +83,7 @@ function Wait-Http($url, $secs) {
     for ($i = 0; $i -lt ($secs / 2); $i++) { Start-Sleep -Seconds 2; $c = & curl.exe -sk -o NUL -w '%{http_code}' --max-time 8 $url; if ($c -match '^(200|302)$') { return $true } }
     return $false
 }
-function Set-AdminConnections($cs) { foreach ($n in 'ConfigurationDbConnection', 'PersistedGrantDbConnection', 'IdentityDbConnection', 'AdminLogDbConnection', 'AdminAuditLogDbConnection', 'DataProtectionDbConnection') { Set-Item "Env:ConnectionStrings__$n" $cs } }
+function Set-AdminConnections($cs) { Set-Item 'Env:Serilog__WriteTo__2__Args__connectionString' $cs; foreach ($n in 'ConfigurationDbConnection', 'PersistedGrantDbConnection', 'IdentityDbConnection', 'AdminLogDbConnection', 'AdminAuditLogDbConnection', 'DataProtectionDbConnection') { Set-Item "Env:ConnectionStrings__$n" $cs } }
 
 if ($Stop) {
     Stop-Apps
