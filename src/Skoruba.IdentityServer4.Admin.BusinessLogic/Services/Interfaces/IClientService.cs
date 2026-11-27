@@ -47,6 +47,15 @@ namespace Skoruba.IdentityServer4.Admin.BusinessLogic.Services.Interfaces
 
         Task<int> DeleteClientSecretAsync(ClientSecretsDto clientSecret);
 
+        /// <summary>
+        /// Generates a new random secret for the client and retires the old ones: revoked now when
+        /// <paramref name="gracePeriodDays"/> is 0, otherwise left valid until the grace period ends.
+        /// </summary>
+        Task<ClientSecretRotationResultDto> RotateClientSecretAsync(int clientId, int gracePeriodDays);
+
+        /// <summary>Creates a client from a template (grant types, PKCE, secret, scopes) in a single step.</summary>
+        Task<ClientQuickCreateResultDto> QuickCreateClientAsync(ClientQuickCreateDto model);
+
         Task<ClientSecretsDto> GetClientSecretsAsync(int clientId, int page = 1, int pageSize = 10);
 
         Task<ClientSecretsDto> GetClientSecretAsync(int clientSecretId);

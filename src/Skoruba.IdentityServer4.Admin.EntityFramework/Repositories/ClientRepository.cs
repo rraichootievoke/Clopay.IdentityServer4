@@ -153,6 +153,16 @@ namespace Skoruba.IdentityServer4.Admin.EntityFramework.Repositories
             return await AutoSaveChangesAsync();
         }
 
+        public virtual async Task<int> UpdateClientSecretExpirationAsync(int clientSecretId, DateTime? expiration)
+        {
+            var secret = await DbContext.ClientSecrets.Where(x => x.Id == clientSecretId).SingleOrDefaultAsync();
+            if (secret == null) return 0;
+
+            secret.Expiration = expiration;
+
+            return await AutoSaveChangesAsync();
+        }
+
         protected virtual async Task<int> AutoSaveChangesAsync()
         {
             return AutoSaveChanges ? await DbContext.SaveChangesAsync() : (int)SavedStatus.WillBeSavedExplicitly;

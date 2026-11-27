@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using IdentityServer4.Models;
 using Skoruba.AuditLogging.Services;
@@ -333,6 +334,150 @@ namespace Skoruba.IdentityServer4.Admin.BusinessLogic.Services
             await AuditEventLogger.LogEventAsync(new ClientSecretAddedEvent(clientSecret.ClientId, clientSecret.Type, clientSecret.Expiration));
 
             return added;
+        }
+
+        /// <summary>A 256-bit random secret, hex encoded (64 characters).</summary>
+        private static string GenerateSecret()
+        {
+            return Convert.ToHexString(RandomNumberGenerator.GetBytes(32)).ToLowerInvariant();
+        }
+
+        public virtual async Task<ClientSecretRotationResultDto> RotateClientSecretAsync(int clientId, int gracePeriodDays)
+        {
+            var clientInfo = await ClientRepository.GetClientIdAsync(clientId);
+            if (clientInfo.ClientId == null) throw new UserFriendlyErrorPageException(string.Format(ClientServiceResources.ClientDoesNotExist().Description, clientId));
+
+            if (gracePeriodDays < 0) gracePeriodDays = 0;
+
+            // Load the current secrets first, so the new one is never retired by mistake
+            var existing = (await ClientRepository.GetClientSecretsAsync(clientId, 1, int.MaxValue)).Data.ToList();
+
+            var plainSecret = GenerateSecret();
+            var now = DateTime.UtcNow;
+
+            await AddClientSecretAsync(new ClientSecretsDto
+            {
+                ClientId = clientId,
+                ClientName = ViewHelpers.GetClientName(clientInfo.ClientId, clientInfo.ClientName),
+                Type = SharedSecret,
+                HashType = HashType.Sha256.ToString(),
+                Value = plainSecret,
+                Description = $"Rotated {now:yyyy-MM-dd HH:mm} UTC"
+            });
+
+            DateTime? graceEnds = gracePeriodDays > 0 ? now.AddDays(gracePeriodDays) : (DateTime?)null;
+            var retired = 0;
+
+            foreach (var old in existing)
+            {
+                var oldId = old.Id;
+
+                if (graceEnds == null)
+                {
+                    await ClientRepository.DeleteClientSecretAsync(old);
+                    await AuditEventLogger.LogEventAsync(new ClientSecretDeletedEvent(clientId, oldId));
+                    retired++;
+                }
+                else if (!old.Expiration.HasValue || old.Expiration.Value > graceEnds.Value)
+                {
+                    await ClientRepository.UpdateClientSecretExpirationAsync(oldId, graceEnds);
+                    retired++;
+                }
+            }
+
+            await AuditEventLogger.LogEventAsync(new ClientSecretRotatedEvent(clientId, retired, gracePeriodDays, graceEnds));
+
+            return new ClientSecretRotationResultDto
+            {
+                ClientId = clientId,
+                ClientIdentifier = clientInfo.ClientId,
+                ClientName = ViewHelpers.GetClientName(clientInfo.ClientId, clientInfo.ClientName),
+                NewSecret = plainSecret,
+                RetiredSecrets = retired,
+                GracePeriodDays = gracePeriodDays,
+                GracePeriodEndsUtc = graceEnds
+            };
+        }
+
+        private static List<string> SplitLines(string value)
+        {
+            return (value ?? string.Empty)
+                .Split(new[] { '\r', '\n', ' ', ',', ';' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Trim())
+                .Where(x => x.Length > 0)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        }
+
+        public virtual async Task<ClientQuickCreateResultDto> QuickCreateClientAsync(ClientQuickCreateDto model)
+        {
+            var client = new ClientDto
+            {
+                ClientType = ClientType.Empty,
+                ClientId = model.ClientId.Trim(),
+                ClientName = string.IsNullOrWhiteSpace(model.ClientName) ? model.ClientId.Trim() : model.ClientName.Trim(),
+                Description = model.Description,
+                RequireConsent = false,
+                RequireClientSecret = true,
+                RequirePkce = false
+            };
+
+            switch (model.Template)
+            {
+                case QuickClientTemplate.WebApp:
+                    client.AllowedGrantTypes.Add("authorization_code");
+                    client.RequirePkce = true;
+                    break;
+                case QuickClientTemplate.Spa:
+                    client.AllowedGrantTypes.Add("authorization_code");
+                    client.RequirePkce = true;
+                    client.RequireClientSecret = false;
+                    break;
+                case QuickClientTemplate.Machine:
+                    client.AllowedGrantTypes.Add("client_credentials");
+                    break;
+                case QuickClientTemplate.LegacyPassword:
+                    client.AllowedGrantTypes.Add("password");
+                    client.AllowOfflineAccess = true;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(model.Template));
+            }
+
+            var usesBrowser = model.Template == QuickClientTemplate.WebApp || model.Template == QuickClientTemplate.Spa;
+            if (usesBrowser)
+            {
+                client.RedirectUris.AddRange(SplitLines(model.RedirectUris));
+                client.PostLogoutRedirectUris.AddRange(SplitLines(model.PostLogoutRedirectUris));
+            }
+
+            if (model.Template != QuickClientTemplate.Machine)
+            {
+                client.AllowedCorsOrigins.AddRange(SplitLines(model.AllowedCorsOrigins));
+            }
+
+            var scopes = (model.SelectedScopes ?? new List<string>()).Concat(SplitLines(model.ExtraScopes))
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            client.AllowedScopes.AddRange(scopes);
+
+            var id = await AddClientAsync(client);
+
+            string secret = null;
+            if (client.RequireClientSecret)
+            {
+                secret = (await RotateClientSecretAsync(id, 0)).NewSecret;
+            }
+
+            return new ClientQuickCreateResultDto
+            {
+                Id = id,
+                ClientId = client.ClientId,
+                ClientName = client.ClientName,
+                Secret = secret,
+                Template = model.Template
+            };
         }
 
         public virtual async Task<int> DeleteClientSecretAsync(ClientSecretsDto clientSecret)

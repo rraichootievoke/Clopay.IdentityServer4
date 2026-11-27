@@ -1,122 +1,57 @@
-﻿@using Microsoft.AspNetCore.Mvc.Localization
 @using Skoruba.IdentityServer4.Admin.UI.Configuration
 @using Skoruba.IdentityServer4.Admin.UI.Configuration.Constants
 @inject AdminConfiguration AdminConfiguration
-@inject IViewLocalizer Localizer
 
 @{
-	ViewBag.Title = AdminConfiguration.PageTitle;
-	Layout = "_Layout";
+    ViewBag.Title = "Home";
+    Layout = "_Layout";
 }
 
-<div class="welcome-block px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
-	<h1 class="display-4">@AdminConfiguration.PageTitle</h1>
-	<p class="lead">@Localizer["PageSubTitle"]</p>
-</div>
+<div class="cl-page">
+    <h1 class="cl-title">Welcome</h1>
+    <p class="cl-subtitle">Manage who can sign in to Clopay apps and APIs. Pick a task to get started.</p>
 
-<!-- Cards -->
-<div class="card-deck mb-3 text-center">
-    <!-- Clients -->
-    <div class="card mb-4 box-shadow">
-        <div class="card-header">
-            <h4 class="my-0 font-weight-normal">@Localizer["ButtonClients"]</h4>
-        </div>
-        <div class="card-body">
-            <h1 class="card-title">
-                <span class="oi oi-monitor" title="Clients" aria-hidden="true"></span>
-            </h1>
-            <a asp-area="@CommonConsts.AdminUIArea" asp-controller="Configuration" asp-action="Clients" class="btn btn-lg btn-block btn-primary">@Localizer["ButtonManage"]</a>
-        </div>
-    </div>
-    <!-- Identity Resources -->
-    <div class="card mb-4 box-shadow">
-        <div class="card-header">
-            <h4 class="my-0 font-weight-normal">@Localizer["ButtonIdentityClients"]</h4>
-        </div>
-        <div class="card-body">
-            <h1 class="card-title">
-                <span class="oi oi-tags" title="Identity Resources" aria-hidden="true"></span>
-            </h1>
-            <a asp-area="@CommonConsts.AdminUIArea" asp-controller="Configuration" asp-action="IdentityResources" class="btn btn-lg btn-block btn-outline-primary">@Localizer["ButtonManage"]</a>
-        </div>
-    </div>
-    <!-- Api Resources -->
-    <div class="card mb-4 box-shadow">
-        <div class="card-header">
-            <h4 class="my-0 font-weight-normal">@Localizer["ButtonApiResources"]</h4>
-        </div>
-        <div class="card-body">
-            <h1 class="card-title">
-                <span class="oi oi-cloud" title="Api Resources" aria-hidden="true"></span>
-            </h1>
-            <a asp-area="@CommonConsts.AdminUIArea" asp-controller="Configuration" asp-action="ApiResources" class="btn btn-lg btn-block btn-primary">@Localizer["ButtonManage"]</a>
-        </div>
-    </div>
-    
-    <!-- Api Scopes -->
-    <div class="card mb-4 box-shadow">
-        <div class="card-header">
-            <h4 class="my-0 font-weight-normal">@Localizer["ButtonApiScopes"]</h4>
-        </div>
-        <div class="card-body">
-            <h1 class="card-title">
-                <span class="oi oi-wrench" title="Api Scopes" aria-hidden="true"></span>
-            </h1>
-            <a asp-area="@CommonConsts.AdminUIArea" asp-controller="Configuration" asp-action="ApiScopes" class="btn btn-lg btn-block btn-outline-primary">@Localizer["ButtonManage"]</a>
-        </div>
+    <h2 class="cl-section">Common tasks</h2>
+    <div class="cl-tiles">
+        <a class="cl-tile cl-tile-accent" asp-area="@CommonConsts.AdminUIArea" asp-controller="Configuration" asp-action="ClientNew">
+            <span class="cl-tile-icon oi oi-plus" aria-hidden="true"></span>
+            <span class="cl-tile-label">Create a client</span>
+            <span class="cl-tile-hint">Register a new app or service in a few clicks</span>
+        </a>
+        <a class="cl-tile" asp-area="@CommonConsts.AdminUIArea" asp-controller="Configuration" asp-action="Clients">
+            <span class="cl-tile-icon oi oi-monitor" aria-hidden="true"></span>
+            <span class="cl-tile-label">Clients &amp; secrets</span>
+            <span class="cl-tile-hint">Find a client, rotate its secret, edit settings</span>
+        </a>
+        <a class="cl-tile" asp-area="@CommonConsts.AdminUIArea" asp-controller="Configuration" asp-action="ApiResources">
+            <span class="cl-tile-icon oi oi-cloud" aria-hidden="true"></span>
+            <span class="cl-tile-label">API resources</span>
+            <span class="cl-tile-hint">APIs that clients can request access to</span>
+        </a>
+        <a class="cl-tile" asp-area="@CommonConsts.AdminUIArea" asp-controller="Configuration" asp-action="ApiScopes">
+            <span class="cl-tile-icon oi oi-wrench" aria-hidden="true"></span>
+            <span class="cl-tile-label">API scopes</span>
+            <span class="cl-tile-hint">Permissions an API exposes</span>
+        </a>
+        <a class="cl-tile" asp-area="@CommonConsts.AdminUIArea" asp-controller="Configuration" asp-action="IdentityResources">
+            <span class="cl-tile-icon oi oi-tags" aria-hidden="true"></span>
+            <span class="cl-tile-label">Identity resources</span>
+            <span class="cl-tile-hint">User information shared with apps</span>
+        </a>
+        <a class="cl-tile" asp-area="@CommonConsts.AdminUIArea" asp-controller="Grant" asp-action="PersistedGrants">
+            <span class="cl-tile-icon oi oi-key" aria-hidden="true"></span>
+            <span class="cl-tile-label">Active sessions</span>
+            <span class="cl-tile-hint">Refresh tokens and consents; revoke a session</span>
+        </a>
+        <a class="cl-tile" asp-area="@CommonConsts.AdminUIArea" asp-controller="Log" asp-action="AuditLog">
+            <span class="cl-tile-icon oi oi-eye" aria-hidden="true"></span>
+            <span class="cl-tile-label">Audit log</span>
+            <span class="cl-tile-hint">Who changed what, and when</span>
+        </a>
+        <a class="cl-tile" asp-area="@CommonConsts.AdminUIArea" asp-controller="Identity" asp-action="Users">
+            <span class="cl-tile-icon oi oi-person" aria-hidden="true"></span>
+            <span class="cl-tile-label">Admin users</span>
+            <span class="cl-tile-hint">People who can sign in to this admin site</span>
+        </a>
     </div>
 </div>
-
-
-<div class="card-deck mb-3 text-center">
-    <!-- Persisted Grants -->
-    <div class="card mb-4 box-shadow">
-        <div class="card-header">
-            <h4 class="my-0 font-weight-normal">@Localizer["ButtonPersistedGrants"]</h4>
-        </div>
-        <div class="card-body">
-            <h1 class="card-title">
-                <span class="oi oi-key" title="Persisted Grants" aria-hidden="true"></span>
-            </h1>
-            <a asp-area="@CommonConsts.AdminUIArea" asp-controller="Grant" asp-action="PersistedGrants" class="btn btn-lg btn-block btn-primary">@Localizer["ButtonManage"]</a>
-        </div>
-    </div>
-    <!-- Users -->
-    <div class="card mb-4 box-shadow">
-        <div class="card-header">
-            <h4 class="my-0 font-weight-normal">@Localizer["ButtonUsers"]</h4>
-        </div>
-        <div class="card-body">
-            <h1 class="card-title">
-                <span class="oi oi-person" title="Users" aria-hidden="true"></span>
-            </h1>
-            <a asp-area="@CommonConsts.AdminUIArea" asp-controller="Identity" asp-action="Users" class="btn btn-lg btn-block btn-outline-primary">@Localizer["ButtonManage"]</a>
-        </div>
-    </div>
-    <!-- Roles -->
-    <div class="card mb-4 box-shadow">
-        <div class="card-header">
-            <h4 class="my-0 font-weight-normal">@Localizer["ButtonRoles"]</h4>
-        </div>
-        <div class="card-body">
-            <h1 class="card-title">
-                <span class="oi oi-lock-locked" title="Roles" aria-hidden="true"></span>
-            </h1>
-            <a asp-area="@CommonConsts.AdminUIArea" asp-controller="Identity" asp-action="Roles" class="btn btn-lg btn-block btn-primary">@Localizer["ButtonManage"]</a>
-        </div>
-    </div>
-
-    <!-- Audit Logging -->
-    <div class="card mb-4 box-shadow">
-        <div class="card-header">
-            <h4 class="my-0 font-weight-normal">@Localizer["ButtonAuditLogs"]</h4>
-        </div>
-        <div class="card-body">
-            <h1 class="card-title">
-                <span class="oi oi-eye" title="Audit Logging" aria-hidden="true"></span>
-            </h1>
-            <a asp-area="@CommonConsts.AdminUIArea" asp-controller="Log" asp-action="AuditLog" class="btn btn-lg btn-block btn-outline-primary">@Localizer["ButtonManage"]</a>
-        </div>
-    </div>
-</div>
-

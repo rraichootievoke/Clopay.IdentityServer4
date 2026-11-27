@@ -86,6 +86,77 @@ namespace Skoruba.IdentityServer4.Admin.UI.Areas.AdminUI.Controllers
             return RedirectToAction(nameof(Client), new { client.Id });
         }
 
+        /// <summary>Simple "create a client" page: pick a template, fill in a few fields, done.</summary>
+        [HttpGet]
+        public async Task<IActionResult> ClientNew()
+        {
+            var model = new ClientQuickCreateDto();
+            await PrepareQuickCreateAsync(model);
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ClientNew(ClientQuickCreateDto model)
+        {
+            if (ModelState.IsValid && !await _clientService.CanInsertClientAsync(new ClientDto { ClientId = model.ClientId.Trim() }))
+            {
+                ModelState.AddModelError(nameof(model.ClientId), $"A client with the ID '{model.ClientId}' already exists.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                await PrepareQuickCreateAsync(model, keepSelection: true);
+                return View(model);
+            }
+
+            var result = await _clientService.QuickCreateClientAsync(model);
+
+            // The plain-text secret only exists in this response - never redirect or store it.
+            Response.Headers["Cache-Control"] = "no-store";
+            return View("ClientCreated", result);
+        }
+
+        private async Task PrepareQuickCreateAsync(ClientQuickCreateDto model, bool keepSelection = false)
+        {
+            model.AvailableScopes = await _clientService.GetScopesAsync(null);
+
+            if (!keepSelection)
+            {
+                model.SelectedScopes = model.AvailableScopes
+                    .Where(x => x == "openid" || x == "profile")
+                    .ToList();
+            }
+        }
+
+        /// <summary>Confirmation page for rotating a client secret.</summary>
+        [HttpGet]
+        public async Task<IActionResult> ClientSecretRotate(int id)
+        {
+            if (id == 0) return NotFound();
+
+            var clientSecrets = await _clientService.GetClientSecretsAsync(id, 1, 100);
+
+            return View(clientSecrets);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ClientSecretRotate(int id, int gracePeriodDays)
+        {
+            if (id == 0) return NotFound();
+
+            // Allow only the choices offered on the page
+            if (gracePeriodDays != 0 && gracePeriodDays != 1 && gracePeriodDays != 7 && gracePeriodDays != 30) gracePeriodDays = 0;
+
+            var result = await _clientService.RotateClientSecretAsync(id, gracePeriodDays);
+
+            // The plain-text secret only exists in this response - never redirect or store it.
+            Response.Headers["Cache-Control"] = "no-store";
+            return View("ClientSecretRotated", result);
+        }
+
         [HttpGet]
         public async Task<IActionResult> ClientClone(int id)
         {

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using IdentityServer4.EntityFramework.Entities;
 using Skoruba.IdentityServer4.Admin.EntityFramework.Extensions.Common;
@@ -50,6 +51,8 @@ namespace Skoruba.IdentityServer4.Admin.EntityFramework.Repositories.Interfaces
 	    List<string> GetStandardClaims(string claim, int limit = 0);
 
         Task<int> AddClientSecretAsync(int clientId, ClientSecret clientSecret);
+
+        Task<int> UpdateClientSecretExpirationAsync(int clientSecretId, DateTime? expiration);
 
 		Task<int> DeleteClientSecretAsync(ClientSecret clientSecret);
 
