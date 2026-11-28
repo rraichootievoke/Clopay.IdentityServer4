@@ -20,10 +20,10 @@ namespace Clopay.IDPAdminUI.Configuration
         public string IdentityAdminRedirectUri { get; set; }
 
         /// <summary>The IDP client used for administrator sign-in.</summary>
-        public string ClientId { get; set; }
+        public string ClientId { get; set; } = "admin_ui";
         public string ClientSecret { get; set; }
         public string OidcResponseType { get; set; } = "code";
-        public string[] Scopes { get; set; } = new[] { "openid", "profile" };
+        public string[] Scopes { get; set; } = new[] { "openid", "admin_ui_profile" };
         public bool RequireHttpsMetadata { get; set; } = true;
 
         public string IdentityAdminCookieName { get; set; } = "ClopayIdpAdminUi";

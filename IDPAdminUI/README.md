@@ -45,7 +45,7 @@ IDPAdminUI/
 |---|---|
 | `ConnectionStrings:ConfigurationDbConnection` / `PersistedGrantDbConnection` | The IDP database. Use a **read-only SQL login** until you are ready to allow changes. |
 | `AdminConfiguration:IdentityServerBaseUrl` | The IDP that signs administrators in, e.g. `https://test-iam.clopay.com` |
-| `AdminConfiguration:ClientId` / `ClientSecret` | The IDP client used for sign-in (the old UI's client) |
+| `AdminConfiguration:ClientId` / `ClientSecret` | The IDP client used for sign-in: `admin_ui` (default) and its secret |
 | `AdminConfiguration:IdentityAdminRedirectUri` | `https://<env>-iamui.clopay.com/signin-oidc` |
 | `AdminConfiguration:AllowedAdmins` | Who may use the site (matches `preferred_username`, `name`, `email` or `sub`). Empty = nobody. |
 | `AdminConfiguration:ReadOnlyMode` | `true` = view-only. Set `false` (env var `AdminConfiguration__ReadOnlyMode=false`) to allow changes. |
@@ -58,20 +58,15 @@ The site refuses to start while a `<PLACEHOLDER>` is left in a required setting.
 1. Sign in. If your account is not listed you see "Access denied" with the exact values (`preferred_username`, `sub`, ...) to add.
 2. Add one of them to `AllowedAdmins` (file or `AdminConfiguration__AllowedAdmins__0=...`) and restart the site.
 
-### Finding the sign-in client (reusing the old UI's)
+### The sign-in client (reused from the old UI)
 
-The old UI at `https://<env>-iamui.clopay.com/auth` signs in through the IDP. Open it in a private window **before** it is replaced: the browser is
-redirected to `https://<env>-iam.clopay.com/connect/authorize?client_id=...&redirect_uri=...&response_type=...&scope=...`. Copy `client_id`,
-`redirect_uri`, `response_type` and `scope` from the address bar. The client secret is the `AdminUIClientSecret` environment variable in the old site's
-`web.config` (on the server: `...\AdminUI\Ui\web.config`) - do not paste it anywhere public. Or look the client up with a read-only query:
+The old UI signs in with IDP client **`admin_ui`** (code flow + PKCE, scopes `openid admin_api admin_ui_profile offline_access`, redirect URI
+`https://<env>-iamui.clopay.com/signin-oidc` - confirmed on Test). The new UI uses the same client and asks only for `openid` + `admin_ui_profile`,
+so **no IDP or database change is needed**. You only supply the client **secret**: it is the `AdminUIClientSecret` environment variable in the old
+site's `web.config` (server: `...\AdminUI\Ui\web.config`) - set it as `AdminConfiguration__ClientSecret`, never commit it.
 
-```sql
-SELECT Id, ClientId, ClientName, RequireClientSecret, RequirePkce FROM dbo.Clients WHERE ClientId LIKE '%admin%' OR ClientName LIKE '%admin%' OR ClientId LIKE '%express%';
--- then, with that Id:
-SELECT 'redirect' k, RedirectUri v FROM dbo.ClientRedirectUris WHERE ClientId = @id
-UNION ALL SELECT 'scope', Scope FROM dbo.ClientScopes WHERE ClientId = @id
-UNION ALL SELECT 'grant', GrantType FROM dbo.ClientGrantTypes WHERE ClientId = @id;
-```
+For Development / Staging / Production the client id should be the same; verify by opening `https://<env>-iamui.clopay.com/auth` in a private window and
+reading `client_id` in the address bar of the IDP page (override with `AdminConfiguration__ClientId` if it differs).
 
 ## Run locally
 
@@ -79,7 +74,6 @@ UNION ALL SELECT 'grant', GrantType FROM dbo.ClientGrantTypes WHERE ClientId = @
 cd src/Clopay.IDPAdminUI
 dotnet user-secrets set "ConnectionStrings:ConfigurationDbConnection" "<read-only connection string>"
 dotnet user-secrets set "ConnectionStrings:PersistedGrantDbConnection"  "<read-only connection string>"
-dotnet user-secrets set "AdminConfiguration:ClientId"     "<client id>"
 dotnet user-secrets set "AdminConfiguration:ClientSecret" "<client secret>"
 dotnet run          # ASPNETCORE_ENVIRONMENT=Local, https://localhost:44303
 ```

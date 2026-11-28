@@ -16,7 +16,7 @@ Approved by the user on 2026-11-27.
 | Topic | Decision |
 |---|---|
 | Framework | .NET 8 (`net8.0`) - the Clopay standard; single project ("Option A") |
-| Sign-in | Through the Clopay IDP (OIDC), reusing the old UI's IDP client. No STS. The IDP sends no role claim, so authorization is an allow-list (`AllowedAdmins`) |
+| Sign-in | Through the Clopay IDP (OIDC), reusing the old UI's IDP client `admin_ui` (observed on Test: code + PKCE, scope `openid admin_api admin_ui_profile offline_access`; we request `openid admin_ui_profile`). No STS. The IDP sends no role claim, so authorization is an allow-list (`AllowedAdmins`) |
 | Database | The IDP database only. No migrations, seed, admin tables, audit tables or data-protection tables |
 | Logs / audit | Serilog files: `Log\idpadminui-*.log`, `Log\audit-*.log`. Data-protection keys: `App_Data\DataProtection-Keys` |
 | Safety | `ReadOnlyMode` (default true everywhere) refuses every non-GET request; SQL read-only login recommended first |

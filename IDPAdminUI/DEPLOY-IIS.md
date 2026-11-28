@@ -19,9 +19,9 @@ Confirm the folder in IIS Manager: *AdminUI -> Basic Settings -> Physical path*.
 1. **Server**: the ASP.NET Core **8** Hosting Bundle is installed (your .NET 8 APIs already need it). The `AdminUI` app pool: **.NET CLR version = No Managed Code**.
 2. **Folder permissions**: give the app pool identity (`IIS AppPool\<pool name>`) **Modify** on the site's `Log` and `App_Data` folders (the deploy script creates them
    and never deletes them). Without `App_Data` the site fails to start with `500.30`.
-3. **Sign-in client**: find the old UI's IDP client *before* replacing it - open `https://<env>-iamui.clopay.com/auth` in a private window and copy `client_id`,
-   `redirect_uri`, `response_type`, `scope` from the address bar of the IDP page it redirects to. The client secret is the `AdminUIClientSecret` value in the old
-   `web.config`. The redirect URI must be `https://<env>-iamui.clopay.com/signin-oidc` (the IDP client's own setting).
+3. **Sign-in client**: the new UI reuses the old UI's IDP client `admin_ui` (nothing to create). **Before replacing the old site, copy the `AdminUIClientSecret`
+   value out of its `web.config`** (it is also in the backup zip afterwards). Check the client id is the same in that environment by opening
+   `https://<env>-iamui.clopay.com/auth` in a private window and reading `client_id` in the IDP page's address bar.
 4. **SQL login**: ask the DBA for the read-only login (`_designs/Create-ReadOnly-Login.sql`) for that environment's IDP database.
 
 ## 2. Build
@@ -41,13 +41,13 @@ environment variables** - unlike `web.config` they survive re-deploys:
 
 ```bat
 %windir%\system32\inetsrv\appcmd.exe set config -section:system.applicationHost/applicationPools ^
-  /+"[name='AdminUI'].environmentVariables.[name='AdminConfiguration__ClientId',value='<client id>']" /commit:apphost
+  /+"[name='AdminUI'].environmentVariables.[name='AdminConfiguration__ClientSecret',value='<secret>']" /commit:apphost
 ```
 
 | Variable | Value |
 |---|---|
-| `AdminConfiguration__ClientId` | the IDP client id from step 1.3 |
-| `AdminConfiguration__ClientSecret` | its secret |
+| `AdminConfiguration__ClientSecret` | the `admin_ui` client secret from step 1.3 |
+| `AdminConfiguration__ClientId` | only if the environment's client id is not `admin_ui` |
 | `AdminConfiguration__AllowedAdmins__0` (`__1`, ...) | user names that may use the UI (see the README: first sign-in shows your values) |
 | `ConnectionStrings__ConfigurationDbConnection` and `ConnectionStrings__PersistedGrantDbConnection` | only if you do not want the SQL login in the settings file (Production) |
 | `AdminConfiguration__ReadOnlyMode` | leave **unset** (= true, view-only) until you are ready for changes |
